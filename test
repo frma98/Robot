@@ -2,3 +2,24 @@ python3 -I -c 'from reachy_mini import ReachyMini
 with ReachyMini(media_backend="local") as m:
     print("samplerate:", m.media.get_input_audio_samplerate())
     print("channels  :", m.media.get_input_channels())'
+
+python3 -I -c '
+import time, numpy as np
+from reachy_mini import ReachyMini
+with ReachyMini(media_backend="local") as m:
+    m.media.start_recording()
+    # warm up past the initial zero burst
+    t=time.time()
+    while time.time()-t < 0.5: m.media.get_audio_sample(); time.sleep(0.01)
+    print("SPEAK NOW for 3s...")
+    chunks=[]; t=time.time()
+    while time.time()-t < 3.0:
+        s=m.media.get_audio_sample()
+        if s is not None: chunks.append(np.asarray(s).ravel())
+        else: time.sleep(0.005)
+    m.media.stop_recording()
+    a=np.concatenate(chunks) if chunks else np.zeros(0)
+    peak=float(np.max(np.abs(a))) if a.size else 0.0
+    nz=int(np.count_nonzero(a))
+    print(f"samples={a.size} nonzero={nz} peak={peak:.6g}")
+    print("ALL ZERO" if peak==0 else "FAINT" if peak<0.01 else "GOOD SIGNAL")
