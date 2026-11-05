@@ -1,0 +1,4 @@
+python3 -I -c 'from reachy_mini import ReachyMini
+with ReachyMini(media_backend="local") as m:
+    print("samplerate:", m.media.get_input_audio_samplerate())
+    print("channels  :", m.media.get_input_channels())'
