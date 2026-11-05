@@ -38,7 +38,8 @@ def transcribe(audio, sr):
         audio = np.interp(np.linspace(0, audio.size, n, endpoint=False),
                           np.arange(audio.size), audio).astype(np.float32)
     segments, _ = stt.transcribe(audio, language="en")
-    return " ".join(seg.text for seg in segments).lower().strip()
+    text = " ".join(seg.text for seg in segments).lower().strip()
+    return text
 
 # command keyword -> gesture
 def look_up(mini):   mini.goto_target(head=create_head_pose(pitch=-25, degrees=True), duration=0.8)
@@ -57,7 +58,8 @@ with ReachyMini() as mini:
     try:
         while True:
             print("Listening…")
-            text = transcribe(*listen(mini, seconds=3.0))
+            audio, sr = listen(mini, seconds=3.0)
+            text = transcribe(audio, sr)
             print(f"Heard: {text!r}")
             if "stop" in text or "goodbye" in text:
                 break
